@@ -1,9 +1,8 @@
 package main
 
 import (
+	"bytes"
 	"flag"
-	"fmt"
-	"io"
 	"os"
 
 	"github.com/fatih/color"
@@ -21,19 +20,102 @@ func openFile() (f *os.File) {
 	}
 	return
 }
-func SCANNER(filePtr *os.File, line *int, column *int) (token Token) {
-	b := make([]byte, 1)
-	_, err := filePtr.Read(b)
-	if err == io.EOF {
-		token = Token{"eof", "eof", "eof"}
-	} else if b[0] == '\n' {
-		*line++
-		*column = 1
+
+func checkTable(state int, b []byte) (newState int, end int) {
+	var char string
+	if b[0] == 0 {
+		char = "EOF"
+	} else if (state != 16 && state != 18) && ((b[0] >= 65 && b[0] <= 90) || (b[0] >= 97 && b[0] <= 122)) {
+		char = "letra"
+	} else if b[0] >= 48 && b[0] <= 57 {
+		char = "numero"
 	} else {
+		char = string(b)
+	}
+	newState, exist := stateTable[state][char]
+	if !exist {
+		return state, 1
+	}
+	return newState, 0
+}
+
+func createToken(b, lexema string, state int, line *int, column *int) (token Token) {
+	if state == 0 {
+		token = Token{"ERROR", "NULO", "NULO"}
+		color.Red("LEXICAL ERROR - unexpected character \"%s\"\nLine:%d\tColumn:%d\t", b, *line, *column)
 		*column++
 	}
-	fmt.Print(b)
-	// Retornar uma posição da carretilha
-	_, err = filePtr.Seek(-1, 1)
-	return token
+	if state == 1 {
+		token = Token{"ERROR", "NULO", "NULO"}
+		color.Red("LEXICAL ERROR - unterminated literal constant \"%s\"\nLine:%d\tColumn:%d\t", lexema, *line, *column)
+	} else if state == 2 {
+		token = Token{"LIT", lexema, "literal"}
+	} else if state == 3 {
+		token = Token{"ID", lexema, "NULO"}
+		if !symbolTable.Search(lexema) {
+			symbolTable.Put(token)
+		}
+	} else if state == 4 {
+		token = Token{"ERROR", "NULO", "NULO"}
+		color.Red("LEXICAL ERROR - unterminated comment \"%s\"\nLine:%d\tColumn:%d\t", lexema, *line, *column)
+	} else if state == 5 {
+		token = Token{"IGNORE", "NULO", "NULO"}
+		if lexema == "\n" {
+			*line++
+			*column = 0
+		}
+	} else if state == 6 {
+		token = Token{"EOF", "EOF", "NULO"}
+	} else if state == 7 || state == 8 || state == 9 {
+		token = Token{"OPR", lexema, "NULO"}
+	} else if state == 10 {
+		token = Token{"RCB", lexema, "NULO"}
+	} else if state == 11 {
+		token = Token{"OPM", lexema, "NULO"}
+	} else if state == 12 {
+		token = Token{"AB_P", lexema, "NULO"}
+	} else if state == 13 {
+		token = Token{"FC_P", lexema, "NULO"}
+	} else if state == 14 {
+		token = Token{"PT_V", lexema, "NULO"}
+	} else if state == 15 {
+		token = Token{"VIR", lexema, "NULO"}
+	} else if state == 16 {
+		token = Token{"NUM", lexema, "INTEGER"}
+	} else if state == 17 || state == 19 || state == 20 {
+		token = Token{"IGNORE", "NULO", "NULO"}
+		color.Red("LEXICAL ERROR - malformed number \"%s\"\nLine:%d\tColumn:%d\t", lexema, *line, *column)
+	} else if state == 18 || state == 21 || state == 22 {
+		token = Token{"NUM", lexema, "FLOAT"}
+	}
+	*column += len(lexema)
+	return
+}
+
+func SCANNER(filePtr *os.File, line *int, column *int) (token Token) {
+	state := 0
+	end := 0
+	var lexema bytes.Buffer
+
+	for true {
+		b := make([]byte, 1)
+		_, err := filePtr.Read(b)
+		state, end = checkTable(state, b)
+
+		if end == 1 {
+			if err == nil && state != 0 {
+				filePtr.Seek(-1, 1)
+			}
+			token = createToken(string(b), lexema.String(), state, line, column)
+			lexema.Reset()
+			if token.Class == "IGNORE" {
+				end, state = 0, 0
+			} else {
+				return
+			}
+		} else {
+			lexema.Write(b)
+		}
+	}
+	return
 }

@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"github.com/fatih/color"
+)
 
 type Token struct {
 	Class  string
@@ -23,7 +25,7 @@ func main() {
 	for token.Class != "EOF" {
 		token = SCANNER(filePtr, &line, &column)
 		if token.Class != "ERROR" {
-			fmt.Printf("Class: \"%s\"\tLexema:\"%s\"\tType:\"%s\"\n", token.Class, token.Lexema, token.Type)
+			color.Cyan("Class: %s \tLexema: %s \tType: %s\n", token.Class, token.Lexema, token.Type)
 		}
 	}
 	filePtr.Close()

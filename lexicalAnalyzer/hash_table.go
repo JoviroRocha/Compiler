@@ -52,3 +52,9 @@ func (ht *HashTable) Search(lexema string) (ok bool) {
 	_, ok = ht.itens[key]
 	return
 }
+
+func (ht *HashTable) Get(lexema string) (token Token) {
+	key := hash(lexema)
+	token = ht.itens[key]
+	return
+}

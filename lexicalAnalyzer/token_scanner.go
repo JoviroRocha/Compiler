@@ -51,9 +51,11 @@ func createToken(b, lexema string, state int, line *int, column *int) (token Tok
 	} else if state == 2 {
 		token = Token{"LIT", lexema, "literal"}
 	} else if state == 3 {
-		token = Token{"ID", lexema, "NULO"}
 		if !symbolTable.Search(lexema) {
 			symbolTable.Put(token)
+			token = Token{"ID", lexema, "NULO"}
+		} else {
+			token = symbolTable.Get(lexema)
 		}
 	} else if state == 4 {
 		token = Token{"ERROR", "NULO", "NULO"}

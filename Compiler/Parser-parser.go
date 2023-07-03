@@ -162,6 +162,10 @@ func errorPanic(follow [6]string, filePtr *os.File, line, column *int, state int
 				return SLR[state][token.Class]
 			}
 		}
+		if token.Class == "EOF" {
+			color.Red("SYNTACTIC ERROR - Unexpected EOF")
+			os.Exit(0)
+		}
 	}
 	panic("should never happen")
 }

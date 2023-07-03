@@ -155,8 +155,8 @@ func errorPanic(follow [6]string, filePtr *os.File, line, column *int, state int
 		token := SCANNER(filePtr, line, column)
 
 		if token.Class == "EOF" {
-			color.Red("Reached EOF")
-			os.Exit(0)
+			return errorCorrector(state, line, column, token, "fim", filePtr)
+
 		}
 		for i := 0; i < 6; i++ {
 			if follow[i] == token.Class {

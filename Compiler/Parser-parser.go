@@ -155,8 +155,8 @@ func errorPanic(follow [6]string, filePtr *os.File, line, column *int, state int
 		token := SCANNER(filePtr, line, column)
 
 		if token.Class == "EOF" {
-			return errorCorrector(state, line, column, token, "fim", filePtr)
-
+			color.Red("SYNTACTIC ERROR - Unexpected EOF While Parsing")
+			os.Exit(0)
 		}
 		for i := 0; i < 6; i++ {
 			if follow[i] == token.Class {

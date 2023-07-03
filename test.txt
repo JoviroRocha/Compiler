@@ -28,7 +28,6 @@ fimrepita
 escreva "\nB=\n";
 escreva D;
 escreva "\n";
-escreva A;
+escreva ;
 escreva "\n";
-escreva A;
-fim
+escreva A

@@ -114,15 +114,15 @@ func errorHandler(state int, line *int, column *int, token Token, filePtr *os.Fi
 		return errorCorrector(state, line, column, token, "entao", filePtr)
 	} else if state == 3 || state == 6 || state == 7 || state == 8 || state == 9 {
 		errorPrinter("fim\" or \"leia\" or \"escreva\" or \"ID\" or \"se\" or \"repita", token, *line, *column)
-		follow := [6]string{"fim", "leia", "escreva", "ID", "se", "repita"}
+		follow := [6]string{"fim", "leia", "escreva", "se", "repita"}
 		return errorPanic(follow, filePtr, line, column, state)
 	} else if state == 14 || state == 36 || state == 37 || state == 38 {
 		errorPrinter("fimse\" or \"leia\" or \"escreva\" or \"ID\" or \"se", token, *line, *column)
-		follow := [6]string{"fimse", "leia", "escreva", "ID", "se", ""}
+		follow := [6]string{"fimse", "leia", "escreva", "se", ""}
 		return errorPanic(follow, filePtr, line, column, state)
 	} else if state == 15 || state == 41 || state == 42 || state == 43 {
 		errorPrinter("fimrepita\" or \"leia\" or \"escreva\" or \"ID\" or \"se", token, *line, *column)
-		follow := [6]string{"fimrepita", "leia", "escreva", "ID", "se", ""}
+		follow := [6]string{"fimrepita", "leia", "escreva", "se", ""}
 		return errorPanic(follow, filePtr, line, column, state)
 	}
 

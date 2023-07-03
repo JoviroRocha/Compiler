@@ -114,7 +114,13 @@ func errorHandler(state int, line *int, column *int, token Token, filePtr *os.Fi
 		return errorCorrector(state, line, column, token, "entao", filePtr)
 	} else if state == 3 || state == 6 || state == 7 || state == 8 || state == 9 {
 		errorPrinter("fim\" or \"leia\" or \"escreva\" or \"ID\" or \"se\" or \"repita", token, *line, *column)
-		return errorCorrector(state, line, column, token, "fim", filePtr)
+		if token.Class == "EOF" {
+			return errorCorrector(state, line, column, token, "fim", filePtr)
+		} else {
+			follow := [6]string{"fim", "leia", "escreva", "ID", "se", "repita"}
+			return errorPanic(follow, filePtr, line, column, state)
+		}
+
 	} else if state == 14 || state == 36 || state == 37 || state == 38 {
 		errorPrinter("fimse\" or \"leia\" or \"escreva\" or \"ID\" or \"se", token, *line, *column)
 		return errorCorrector(state, line, column, token, "fimse", filePtr)

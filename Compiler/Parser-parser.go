@@ -31,7 +31,7 @@ func Parser(filePtr *os.File, line int, column int) {
 
 		if newState, err := strconv.Atoi(action); err != nil {
 
-			if action == "ACC" && token.Class == "EOF" {
+			if action == "ACC" {
 				fmt.Println("P' -> P")
 				return
 			}
@@ -72,14 +72,14 @@ func errorHandler(state int, line *int, column *int, token Token, filePtr *os.Fi
 		return errorCorrector(state, line, column, token, "inicio", filePtr)
 	} else if state == 1 {
 		errorPrinter("EOF", token, *line, *column)
-		return errorCorrector(state, line, column, token, "EOF", filePtr)
+		follow := [6]string{"EOF", "", "", "", "", ""}
+		return errorPanic(follow, filePtr, line, column, state)
 	} else if state == 2 {
 		errorPrinter("varinicio", token, *line, *column)
 		return errorCorrector(state, line, column, token, "varinicio", filePtr)
 	} else if state == 4 || state == 19 {
 		errorPrinter("varfim\" or \"inteiro\" or \"real\" or \"literal", token, *line, *column)
-		follow := [6]string{"varfim", "inteiro", "real", "literal", "", ""}
-		return errorPanic(follow, filePtr, line, column, state)
+		return errorCorrector(state, line, column, token, "varfim", filePtr)
 	} else if state == 11 || state == 21 || state == 67 {
 		errorPrinter("ID", token, *line, *column)
 		return errorCorrector(state, line, column, token, "ID", filePtr)
@@ -114,16 +114,13 @@ func errorHandler(state int, line *int, column *int, token Token, filePtr *os.Fi
 		return errorCorrector(state, line, column, token, "entao", filePtr)
 	} else if state == 3 || state == 6 || state == 7 || state == 8 || state == 9 {
 		errorPrinter("fim\" or \"leia\" or \"escreva\" or \"ID\" or \"se\" or \"repita", token, *line, *column)
-		follow := [6]string{"fim", "leia", "escreva", "se", "repita"}
-		return errorPanic(follow, filePtr, line, column, state)
+		return errorCorrector(state, line, column, token, "fim", filePtr)
 	} else if state == 14 || state == 36 || state == 37 || state == 38 {
 		errorPrinter("fimse\" or \"leia\" or \"escreva\" or \"ID\" or \"se", token, *line, *column)
-		follow := [6]string{"fimse", "leia", "escreva", "se", ""}
-		return errorPanic(follow, filePtr, line, column, state)
+		return errorCorrector(state, line, column, token, "fimse", filePtr)
 	} else if state == 15 || state == 41 || state == 42 || state == 43 {
 		errorPrinter("fimrepita\" or \"leia\" or \"escreva\" or \"ID\" or \"se", token, *line, *column)
-		follow := [6]string{"fimrepita", "leia", "escreva", "se", ""}
-		return errorPanic(follow, filePtr, line, column, state)
+		return errorCorrector(state, line, column, token, "fimrepita", filePtr)
 	}
 
 	panic("should never happen")
@@ -154,10 +151,6 @@ func errorPanic(follow [6]string, filePtr *os.File, line, column *int, state int
 	for true {
 		token := SCANNER(filePtr, line, column)
 
-		if token.Class == "EOF" {
-			color.Red("SYNTACTIC ERROR - Unexpected EOF While Parsing")
-			os.Exit(0)
-		}
 		for i := 0; i < 6; i++ {
 			if follow[i] == token.Class {
 				return SLR[state][token.Class]

@@ -3,14 +3,14 @@ varinicio
 literal A;
 inteiro B, D, E;
 real C;
-varfim;
+
 escreva "Digite B:";
 leia B;
 escreva "Digite A:";
 leia A;
 se(B>2)
 entao
-se(B<=4)
+se (B<=4)
 entao
 escreva "B esta entre 2 e 4";
 fimse
@@ -25,9 +25,10 @@ C<-B+2;
 escreva C;
 B<-B+1;
 fimrepita
-escreva "\nB=\n";
+escreva "\nB=\n";;;;
 escreva D;
 escreva "\n";
-escreva ;
+escreva A;
 escreva "\n";
-escreva A
+escreva A;
+fim

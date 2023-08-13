@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/fatih/color"
@@ -39,15 +40,15 @@ func checkTable(state int, b []byte) (newState int, end int) {
 	return newState, 0
 }
 
-func createToken(b, lexema string, state int, line *int, column *int) (token Token) {
+func createToken(b, lexema string, state int) (token Token) {
 	if state == 0 {
 		token = Token{"ERROR", "NULO", "NULO"}
-		color.Red("LEXICAL ERROR - unexpected character \"%s\"\nLine:%d\tColumn:%d\t", b, *line, *column)
-		*column++
+		color.Red("LEXICAL ERROR - unexpected character \"%s\"\nLine:%d\tColumn:%d\t", b, line, column)
+		column++
 	}
 	if state == 1 {
 		token = Token{"ERROR", "NULO", "NULO"}
-		color.Red("LEXICAL ERROR - unterminated literal constant \"%s\"\nLine:%d\tColumn:%d\t", lexema, *line, *column)
+		color.Red("LEXICAL ERROR - unterminated literal constant \"%s\"\nLine:%d\tColumn:%d\t", lexema, line, column)
 	} else if state == 2 {
 		token = Token{"LIT", lexema, "literal"}
 	} else if state == 3 {
@@ -59,12 +60,12 @@ func createToken(b, lexema string, state int, line *int, column *int) (token Tok
 		}
 	} else if state == 4 {
 		token = Token{"ERROR", "NULO", "NULO"}
-		color.Red("LEXICAL ERROR - unterminated comment \"%s\"\nLine:%d\tColumn:%d\t", lexema, *line, *column)
+		color.Red("LEXICAL ERROR - unterminated comment \"%s\"\nLine:%d\tColumn:%d\t", lexema, line, column)
 	} else if state == 5 {
 		token = Token{"IGNORE", "NULO", "NULO"}
 		if lexema == "\n" {
-			*line++
-			*column = 0
+			line++
+			column = 0
 		}
 	} else if state == 6 {
 		token = Token{"EOF", "EOF", "NULO"}
@@ -86,15 +87,15 @@ func createToken(b, lexema string, state int, line *int, column *int) (token Tok
 		token = Token{"NUM", lexema, "INTEGER"}
 	} else if state == 17 || state == 19 || state == 20 {
 		token = Token{"IGNORE", "NULO", "NULO"}
-		color.Red("LEXICAL ERROR - malformed number \"%s\"\nLine:%d\tColumn:%d\t", lexema, *line, *column)
+		color.Red("LEXICAL ERROR - malformed number \"%s\"\nLine:%d\tColumn:%d\t", lexema, line, column)
 	} else if state == 18 || state == 21 || state == 22 {
 		token = Token{"NUM", lexema, "FLOAT"}
 	}
-	*column += len(lexema)
+	column += len(lexema)
 	return
 }
 
-func SCANNER(filePtr *os.File, line *int, column *int) (token Token) {
+func SCANNER(filePtr *os.File) (token Token) {
 	state := 0
 	end := 0
 	var lexema bytes.Buffer
@@ -108,11 +109,13 @@ func SCANNER(filePtr *os.File, line *int, column *int) (token Token) {
 			if err == nil && state != 0 {
 				filePtr.Seek(-1, 1)
 			}
-			token = createToken(string(b), lexema.String(), state, line, column)
+			token = createToken(string(b), lexema.String(), state)
 			lexema.Reset()
 			if token.Class == "IGNORE" {
 				end, state = 0, 0
 			} else {
+				fmt.Println(token)
+				semanticStack.Push(token)
 				return
 			}
 		} else {

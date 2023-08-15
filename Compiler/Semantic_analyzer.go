@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/fatih/color"
 )
@@ -17,9 +18,10 @@ func Semantic(cFile *os.File, rule int) {
 	case 7, 8:
 		id := semanticStack.getStack("ID")
 		TIPO := semanticStack.getStack("TIPO")
-		symbolTable.Att(Token{id.Class, id.Lexema, TIPO.Lexema})
+		newId := Token{id.Class, id.Lexema, TIPO.Lexema}
+		symbolTable.Att(newId)
 		updateStack("ID", Token{"L", TIPO.Lexema, "L"})
-		writeCFile(cFile, rule, id)
+		writeCFile(cFile, rule, newId)
 	case 9:
 		token := Token{"TIPO", "inteiro", "TIPO"}
 		semanticStack.Push(token)
@@ -32,9 +34,19 @@ func Semantic(cFile *os.File, rule int) {
 		token := Token{"TIPO", "literal", "TIPO"}
 		semanticStack.Push(token)
 		writeCFile(cFile, rule, voidToken)
+	case 13:
+		lexema := semanticStack.getStack("ID").Lexema
+		id := symbolTable.Get(lexema)
+		if id.Type == "NULO" || id.Type == "" {
+			color.Red("SEMANTIC ERROR - Variable \"%s\" not declared\nLine: %d, Column: %d", lexema, line, column)
+			generateFlag = false
+			return
+		} else {
+			writeCFile(cFile, rule, id)
+		}
 	case 14:
-		//oldToken := semanticStack.Pop()
-		//writeCFile(cFile, rule, oldToken)
+		arg := semanticStack.getStack("ARG")
+		writeCFile(cFile, rule, arg)
 	case 15:
 		lit := semanticStack.getStack("LIT")
 		token := Token{"ARG", lit.Lexema, lit.Type}
@@ -46,8 +58,8 @@ func Semantic(cFile *os.File, rule int) {
 	case 17:
 		id := semanticStack.getStack("ID")
 		token := symbolTable.Get(id.Lexema)
-		if token.Class == "" {
-			color.Red("SEMANTIC ERROR - Variable \"%s\" not declared")
+		if token.Type == "" {
+			color.Red("SEMANTIC ERROR - Variable \"%s\" not declared\nLine: %d, Column: %d", id.Lexema, line, column)
 			generateFlag = false
 			return
 		}
@@ -62,6 +74,7 @@ func openCFile() (f *os.File) {
 		color.Red("\nERROR: The file PROGRAMA.C cannot be created by the system\n %s", err)
 		os.Exit(10)
 	}
+	fmt.Fprintf(f, "#include <stdio.h>\n\n#define string_size 100\n\nint main() {\n\n")
 	return
 }
 
@@ -73,18 +86,52 @@ func writeCFile(cFile *os.File, rule int, token Token) {
 		case 6:
 			fmt.Fprintf(cFile, ";\n")
 		case 7:
-			fmt.Fprintf(cFile, ", %s", token.Lexema)
+			if token.Type == "literal" {
+				fmt.Fprintf(cFile, ", %s[string_size]", token.Lexema)
+			} else {
+				fmt.Fprintf(cFile, ", %s", token.Lexema)
+			}
 		case 8:
-			fmt.Fprintf(cFile, token.Lexema)
+			if token.Type == "literal" {
+				fmt.Fprintf(cFile, "%s[string_size]", token.Lexema)
+			} else {
+				fmt.Fprintf(cFile, token.Lexema)
+			}
 		case 9:
-			fmt.Fprintf(cFile, "int ")
+			fmt.Fprintf(cFile, "\tint ")
 		case 10:
-			fmt.Fprintf(cFile, "float ")
+			fmt.Fprintf(cFile, "\tdouble ")
 		case 11:
-			fmt.Fprintf(cFile, "char *")
-		case 14:
-			fmt.Fprintf(cFile, "printf(%s);\n", token.Lexema)
+			fmt.Fprintf(cFile, "\tchar ")
+		case 13:
+			text := ""
+			if token.Type == "literal" {
+				text = "\tscanf(\"%s\", " + token.Lexema + ");"
+			} else if token.Type == "inteiro" {
+				text = "\tscanf(\"%d\", &" + token.Lexema + ");"
+			} else if token.Type == "real" {
+				text = "\tscanf(\"%lf\", &" + token.Lexema + ");"
+			} else {
+				color.Red("\nERROR: Internal compiler error\n")
+				os.Exit(1)
+				return
+			}
+			fmt.Fprintln(cFile, text)
 
+		case 14:
+			if token.Type == "INTEGER" || token.Type == "FLOAT" {
+				fmt.Fprintf(cFile, "\tprintf(\"%s\");\n", token.Lexema)
+			} else if token.Type == "inteiro" {
+				fmt.Fprintf(cFile, "\tprintf(\"%%d\", %s);\n", token.Lexema)
+			} else if token.Type == "real" {
+				fmt.Fprintf(cFile, "\tprintf(\"%%lf\", %s);\n", token.Lexema)
+			} else {
+				if strings.Contains(token.Lexema, "\"") {
+					fmt.Fprintf(cFile, "\tprintf(%s);\n", token.Lexema)
+				} else {
+					fmt.Fprintf(cFile, "\tprintf(\"%%s\", %s);\n", token.Lexema)
+				}
+			}
 		}
 	}
 }
@@ -94,6 +141,10 @@ func updateStack(update string, token Token) {
 
 	for value.Class != update {
 		value = semanticStack.Pop()
+	}
+
+	if token.Class == "" && token.Lexema == "" && token.Type == "" {
+		return
 	}
 
 	semanticStack.Push(token)

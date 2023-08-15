@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"os"
 
 	"github.com/fatih/color"
@@ -114,7 +113,6 @@ func SCANNER(filePtr *os.File) (token Token) {
 			if token.Class == "IGNORE" {
 				end, state = 0, 0
 			} else {
-				fmt.Println(token)
 				semanticStack.Push(token)
 				return
 			}

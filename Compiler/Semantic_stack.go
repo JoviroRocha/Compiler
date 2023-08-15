@@ -1,11 +1,5 @@
 package main
 
-import (
-	"os"
-
-	"github.com/fatih/color"
-)
-
 type semantic_Stack []Token
 
 func (s *semantic_Stack) Push(token Token) {
@@ -32,7 +26,6 @@ func (s *semantic_Stack) getStack(value string) (token Token) {
 		}
 		index--
 	}
-	color.Red("\nERROR: Internal compiler error\n")
-	os.Exit(10)
-	return
+
+	return Token{"", "", ""}
 }

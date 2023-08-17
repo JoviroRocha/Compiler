@@ -18,14 +18,31 @@ func (s *semantic_Stack) Get() (token Token) {
 	return (*s)[index]
 }
 
-func (s *semantic_Stack) getStack(value string) (token Token) {
-	index := len(*s) - 1
+func (s *semantic_Stack) getStack(value string, jump ...bool) (token Token) {
+	index := len(*s) - 2
 	for index >= 0 {
 		if (*s)[index].Class == value {
-			return (*s)[index]
+			if len(jump) == 0 {
+				return (*s)[index]
+			}
+			jump = nil
 		}
 		index--
 	}
+	if (*s)[len(*s)-1].Class == value {
+		return (*s)[len(*s)-1]
+	}
 
 	return Token{"", "", ""}
+}
+
+func (s *semantic_Stack) updateStack(oldValue string, token Token) {
+	index := len(*s) - 2
+	for index >= 0 {
+		if (*s)[index].Class == oldValue {
+			(*s)[index] = token
+			return
+		}
+		index--
+	}
 }

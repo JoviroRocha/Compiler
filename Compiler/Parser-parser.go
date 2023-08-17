@@ -175,6 +175,7 @@ func errorPanic(follow [6]string, filePtr *os.File, state int) (action string) {
 func errorPrinter(expected string, token Token, line, column int) {
 
 	color.Red("SYNTACTIC ERROR - Expected \"%s\", found \"%s\"\nLine:%d\tColumn:%d", expected, token.Class, line, column-1)
+	generateFlag = false
 
 }
 

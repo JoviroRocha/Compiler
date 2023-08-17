@@ -43,11 +43,13 @@ func createToken(b, lexema string, state int) (token Token) {
 	if state == 0 {
 		token = Token{"ERROR", "NULO", "NULO"}
 		color.Red("LEXICAL ERROR - unexpected character \"%s\"\nLine:%d\tColumn:%d\t", b, line, column)
+		generateFlag = false
 		column++
 	}
 	if state == 1 {
 		token = Token{"ERROR", "NULO", "NULO"}
 		color.Red("LEXICAL ERROR - unterminated literal constant \"%s\"\nLine:%d\tColumn:%d\t", lexema, line, column)
+		generateFlag = false
 	} else if state == 2 {
 		token = Token{"LIT", lexema, "literal"}
 	} else if state == 3 {
@@ -60,6 +62,7 @@ func createToken(b, lexema string, state int) (token Token) {
 	} else if state == 4 {
 		token = Token{"ERROR", "NULO", "NULO"}
 		color.Red("LEXICAL ERROR - unterminated comment \"%s\"\nLine:%d\tColumn:%d\t", lexema, line, column)
+		generateFlag = false
 	} else if state == 5 {
 		token = Token{"IGNORE", "NULO", "NULO"}
 		if lexema == "\n" {
@@ -87,6 +90,7 @@ func createToken(b, lexema string, state int) (token Token) {
 	} else if state == 17 || state == 19 || state == 20 {
 		token = Token{"IGNORE", "NULO", "NULO"}
 		color.Red("LEXICAL ERROR - malformed number \"%s\"\nLine:%d\tColumn:%d\t", lexema, line, column)
+		generateFlag = false
 	} else if state == 18 || state == 21 || state == 22 {
 		token = Token{"NUM", lexema, "FLOAT"}
 	}

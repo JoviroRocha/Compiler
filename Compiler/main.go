@@ -1,5 +1,7 @@
 package main
 
+import "os"
+
 type Token struct {
 	Class  string
 	Lexema string
@@ -15,10 +17,14 @@ var prods Productions
 var generateFlag bool
 var line int
 var column int
+var temporary int
+var aux string
 
 func main() {
 
-	line, column = 1, 1
+	line, column, temporary = 1, 1, 1
+
+	aux = ""
 
 	symbolTable.Start()
 	stateTable = startStateTable()
@@ -34,4 +40,9 @@ func main() {
 	defer cFile.Close()
 
 	Parser(filePtr, cFile)
+
+	if generateFlag == false {
+		cFile.Close()
+		os.Remove("PROGRAMA.C")
+	}
 }

@@ -18,13 +18,11 @@ var generateFlag bool
 var line int
 var column int
 var temporary int
-var aux string
+var tab int
 
 func main() {
 
-	line, column, temporary = 1, 1, 1
-
-	aux = ""
+	line, column, temporary, tab = 1, 1, 0, 1
 
 	symbolTable.Start()
 	stateTable = startStateTable()

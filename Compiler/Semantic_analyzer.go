@@ -188,7 +188,7 @@ func writeCFile(cFile *os.File, rule int, token ...Token) {
 	if generateFlag == true {
 		switch rule {
 		case 5:
-			fmt.Fprintf(cFile, "\n\n\n")
+			fmt.Fprintf(cFile, "\n\n")
 		case 6:
 			fmt.Fprintf(cFile, ";\n")
 		case 7:
@@ -196,19 +196,31 @@ func writeCFile(cFile *os.File, rule int, token ...Token) {
 		case 8:
 			fmt.Fprintf(cFile, token[0].Lexema)
 		case 9:
-			fmt.Fprintf(cFile, "\tint ")
+			for x := 0; x < tab; x++ {
+				fmt.Fprintf(cFile, "\t")
+			}
+			fmt.Fprintf(cFile, "int ")
 		case 10:
-			fmt.Fprintf(cFile, "\tdouble ")
+			for x := 0; x < tab; x++ {
+				fmt.Fprintf(cFile, "\t")
+			}
+			fmt.Fprintf(cFile, "double ")
 		case 11:
-			fmt.Fprintf(cFile, "\tliteral ")
+			for x := 0; x < tab; x++ {
+				fmt.Fprintf(cFile, "\t")
+			}
+			fmt.Fprintf(cFile, "literal ")
 		case 13:
+			for x := 0; x < tab; x++ {
+				fmt.Fprintf(cFile, "\t")
+			}
 			text := ""
 			if token[0].Type == "literal" {
-				text = "\tscanf(\"%s\", " + token[0].Lexema + ");"
+				text = "scanf(\"%s\", " + token[0].Lexema + ");"
 			} else if token[0].Type == "inteiro" {
-				text = "\tscanf(\"%d\", &" + token[0].Lexema + ");"
+				text = "scanf(\"%d\", &" + token[0].Lexema + ");"
 			} else if token[0].Type == "real" {
-				text = "\tscanf(\"%lf\", &" + token[0].Lexema + ");"
+				text = "scanf(\"%lf\", &" + token[0].Lexema + ");"
 			} else {
 				color.Red("\nERROR: Internal compiler error\n")
 				os.Exit(1)
@@ -216,50 +228,83 @@ func writeCFile(cFile *os.File, rule int, token ...Token) {
 			}
 			fmt.Fprintln(cFile, text)
 		case 14:
+			for x := 0; x < tab; x++ {
+				fmt.Fprintf(cFile, "\t")
+			}
 			if token[0].Type == "INTEGER" || token[0].Type == "FLOAT" {
-				fmt.Fprintf(cFile, "\tprintf(\"%s\");\n", token[0].Lexema)
+				fmt.Fprintf(cFile, "printf(\"%s\");\n", token[0].Lexema)
 			} else if token[0].Type == "inteiro" {
-				fmt.Fprintf(cFile, "\tprintf(\"%%d\", %s);\n", token[0].Lexema)
+				fmt.Fprintf(cFile, "printf(\"%%d\", %s);\n", token[0].Lexema)
 			} else if token[0].Type == "real" {
-				fmt.Fprintf(cFile, "\tprintf(\"%%lf\", %s);\n", token[0].Lexema)
+				fmt.Fprintf(cFile, "printf(\"%%lf\", %s);\n", token[0].Lexema)
 			} else {
 				if strings.Contains(token[0].Lexema, "\"") {
-					fmt.Fprintf(cFile, "\tprintf(%s);\n", token[0].Lexema)
+					fmt.Fprintf(cFile, "printf(%s);\n", token[0].Lexema)
 				} else {
-					fmt.Fprintf(cFile, "\tprintf(\"%%s\", %s);\n", token[0].Lexema)
+					fmt.Fprintf(cFile, "printf(\"%%s\", %s);\n", token[0].Lexema)
 				}
 			}
 		case 19:
-			fmt.Fprintf(cFile, "\t%s = %s;\n", token[0].Lexema, token[1].Lexema)
-		case 20:
-			if token[0].Type == "inteiro" {
-				fmt.Fprintf(cFile, "\tint T%d;\n", temporary)
-			} else {
-				fmt.Fprintf(cFile, "\tdouble T%d;\n", temporary)
+			for x := 0; x < tab; x++ {
+				fmt.Fprintf(cFile, "\t")
 			}
-
-			fmt.Fprintf(cFile, "\tT%d = %s %s %s;\n", temporary, token[2].Lexema, token[1].Lexema, token[0].Lexema)
-		case 25:
-			fmt.Fprintf(cFile, "\t}\n")
-		case 26:
-			fmt.Fprintf(cFile, "\tif(%s){\n", token[0].Lexema)
-		case 27:
+			fmt.Fprintf(cFile, "%s = %s;\n", token[0].Lexema, token[1].Lexema)
+		case 20:
+			for x := 0; x < tab; x++ {
+				fmt.Fprintf(cFile, "\t")
+			}
 			if token[0].Type == "inteiro" {
-				fmt.Fprintf(cFile, "\tint T%d;\n", temporary)
+				fmt.Fprintf(cFile, "int T%d;\n", temporary)
 			} else {
-				fmt.Fprintf(cFile, "\tdouble T%d;\n", temporary)
+				fmt.Fprintf(cFile, "double T%d;\n", temporary)
+			}
+			for x := 0; x < tab; x++ {
+				fmt.Fprintf(cFile, "\t")
+			}
+			fmt.Fprintf(cFile, "T%d = %s %s %s;\n", temporary, token[2].Lexema, token[1].Lexema, token[0].Lexema)
+		case 25:
+			tab--
+			for x := 0; x < tab; x++ {
+				fmt.Fprintf(cFile, "\t")
+			}
+			fmt.Fprintf(cFile, "}\n")
+		case 26:
+			for x := 0; x < tab; x++ {
+				fmt.Fprintf(cFile, "\t")
+			}
+			fmt.Fprintf(cFile, "if(%s){\n", token[0].Lexema)
+			tab++
+		case 27:
+			for x := 0; x < tab; x++ {
+				fmt.Fprintf(cFile, "\t")
+			}
+			if token[0].Type == "inteiro" {
+				fmt.Fprintf(cFile, "int T%d;\n", temporary)
+			} else {
+				fmt.Fprintf(cFile, "double T%d;\n", temporary)
+			}
+			for x := 0; x < tab; x++ {
+				fmt.Fprintf(cFile, "\t")
 			}
 			if token[1].Lexema == "=" {
-				fmt.Fprintf(cFile, "\tT%d = %s %s %s;\n", temporary, token[2].Lexema, "==", token[0].Lexema)
+				fmt.Fprintf(cFile, "T%d = %s %s %s;\n", temporary, token[2].Lexema, "==", token[0].Lexema)
 			} else if token[1].Lexema == "<>" {
-				fmt.Fprintf(cFile, "\tT%d = %s %s %s;\n", temporary, token[2].Lexema, "!=", token[0].Lexema)
+				fmt.Fprintf(cFile, "T%d = %s %s %s;\n", temporary, token[2].Lexema, "!=", token[0].Lexema)
 			} else {
-				fmt.Fprintf(cFile, "\tT%d = %s %s %s;\n", temporary, token[2].Lexema, token[1].Lexema, token[0].Lexema)
+				fmt.Fprintf(cFile, "T%d = %s %s %s;\n", temporary, token[2].Lexema, token[1].Lexema, token[0].Lexema)
 			}
 		case 34:
-			fmt.Fprintf(cFile, "\twhile(%s){\n", token[0].Type)
+			for x := 0; x < tab; x++ {
+				fmt.Fprintf(cFile, "\t")
+			}
+			fmt.Fprintf(cFile, "while(%s){\n", token[0].Type)
+			tab++
 		case 38:
-			fmt.Fprintf(cFile, "\t}\n")
+			tab--
+			for x := 0; x < tab; x++ {
+				fmt.Fprintf(cFile, "\t")
+			}
+			fmt.Fprintf(cFile, "}\n")
 		case 39:
 			fmt.Fprintf(cFile, "\treturn 0;\n}\n")
 		}
